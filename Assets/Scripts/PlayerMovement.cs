@@ -1,25 +1,30 @@
-// This first example shows how to move using Input System Package (New)
+// This first example shows how to move using the New Input System Package
 
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 public class PlayerMovement : MonoBehaviour
 
 {
+    // Controls the player's speed, jump height and gravity
     private float playerSpeed = 5.0f;
     private float jumpHeight = 1.5f;
     private float gravityValue = -9.81f;
 
+    // uses the CharacterController Component in unity, stores our velocity, and checks if we're grounded
+    // I believe playerVelocity and groundedPlayer might be things built into CharacterControllers
     private CharacterController controller;
     private Vector3 playerVelocity;
     private bool groundedPlayer;
 
     [Header("Input Actions")]
-    public InputActionReference moveAction; // expects Vector2
-    public InputActionReference jumpAction; // expects Button
+    public InputActionReference moveAction; // expects Vector2, WASD
+    public InputActionReference jumpAction; // expects Button, like Spacebar
 
     private void Awake()
     {
+        // this lets us access the character controller immediately, even before start
         controller = gameObject.AddComponent<CharacterController>();
     }
 
@@ -37,9 +42,12 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        // groundedPlayer means controller.isGrounded. IDK why we make groundedPlayer a thing if we already have controller.isGrounded
         groundedPlayer = controller.isGrounded;
+        // if player is on the ground and still moving downwards...
         if (groundedPlayer && playerVelocity.y < 0)
         {
+            // stop moving downwards. Need to do this because of our gravity.
             playerVelocity.y = 0f;
         }
 
