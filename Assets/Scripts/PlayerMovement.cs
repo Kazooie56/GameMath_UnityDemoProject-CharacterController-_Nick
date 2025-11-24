@@ -42,18 +42,20 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        // groundedPlayer means controller.isGrounded. IDK why we make groundedPlayer a thing if we already have controller.isGrounded
-        groundedPlayer = controller.isGrounded;
         // if player is on the ground and still moving downwards...
-        if (groundedPlayer && playerVelocity.y < 0)
+        if (controller.isGrounded && playerVelocity.y < 0)                  // controller.isGrounded means the player is touching the ground.
         {
             // stop moving downwards. Need to do this because of our gravity.
             playerVelocity.y = 0f;
         }
 
-        // Read input
+        // Read input WASD
         Vector2 input = moveAction.action.ReadValue<Vector2>();
+
+        // Translate it to the third dimension
         Vector3 move = new Vector3(input.x, 0, input.y);
+
+        // Makes it so diagonal isn't the combined speed of 1y and 1x floats
         move = Vector3.ClampMagnitude(move, 1f);
 
         if (move != Vector3.zero)
