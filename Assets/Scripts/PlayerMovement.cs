@@ -16,7 +16,7 @@ public class PlayerMovement : MonoBehaviour
     // I believe playerVelocity and groundedPlayer might be things built into CharacterControllers
     private CharacterController controller;
     private Vector3 playerVelocity;
-    private bool groundedPlayer;
+    private bool groundedPlayer; // gotta assign this each frame later
 
     [Header("Input Actions")]
     public InputActionReference moveAction; // expects Vector2, WASD
@@ -24,7 +24,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
-        // this lets us access the character controller immediately, even before start
+        // this lets us access the character controller immediately, so this script can use it.
         controller = gameObject.AddComponent<CharacterController>();
     }
 
@@ -42,8 +42,9 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
+        groundedPlayer = controller.isGrounded;
         // if player is on the ground and still moving downwards...
-        if (controller.isGrounded && playerVelocity.y < 0)                  // controller.isGrounded means the player is touching the ground.
+        if (groundedPlayer && playerVelocity.y < 0)                  // controller.isGrounded means the player is touching the ground.
         {
             // stop moving downwards. Need to do this because of our gravity.
             playerVelocity.y = 0f;
@@ -51,12 +52,8 @@ public class PlayerMovement : MonoBehaviour
 
         // Read input WASD
         Vector2 input = moveAction.action.ReadValue<Vector2>();
-
-        // Translate it to the third dimension
-        Vector3 move = new Vector3(input.x, 0, input.y);
-
-        // Makes it so diagonal isn't the combined speed of 1y and 1x floats
-        move = Vector3.ClampMagnitude(move, 1f);
+        Vector3 move = new Vector3(input.x, 0, input.y);            // Translate it to the third dimension
+        move = Vector3.ClampMagnitude(move, 1f);                    // Makes it so diagonal isn't the combined speed of 1y and 1x floats
 
         if (move != Vector3.zero)
         {
@@ -66,7 +63,7 @@ public class PlayerMovement : MonoBehaviour
         // Jump
         if (jumpAction.action.triggered && groundedPlayer)
         {
-            playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * gravityValue);
+            playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * gravityValue); // From CharacterController.Move on Unity Documentation
         }
 
         // Apply gravity
