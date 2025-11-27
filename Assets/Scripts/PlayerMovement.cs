@@ -23,48 +23,33 @@ public class PlayerMovement : MonoBehaviour
     private bool groundedPlayer; // groundedPlayer is a CharacterController built in check for our jump to use.
 
     [Header("Input Actions")]
-    public InputActionReference moveAction; // expects Vector2, WASD
-    public InputActionReference jumpAction; // expects Button, like Spacebar
-    public InputActionReference crouchAction; // expects Button, like Ctrl, unused right now
-    public InputActionReference runAction; // expects Button, like Shift
+    public InputActionReference moveAction;     // expects Vector2, WASD
+    public InputActionReference jumpAction;     // expects Button, like Spacebar
+    public InputActionReference crouchAction;   // expects Button, like Ctrl, unused right now
+    public InputActionReference runAction;      // expects Button, like Shift
+
+    public Transform playerCamera;              // reference the playerCamera to know how to update where forwards is.
+    
 
     private void Awake()
     {
         controller = GetComponent<CharacterController>(); // This grabs the CharacterController before anything else happens
     }
 
-    //private void OnEnable()
-    //{
-    //    moveAction.action.Enable();
-    //    jumpAction.action.Enable();
-    //}
-
-    //private void OnDisable()
-    //{
-    //    moveAction.action.Disable();
-    //    jumpAction.action.Disable();
-    //}
-
     void Update()
     {
         groundedPlayer = controller.isGrounded;                             // I think UnityDocumentation just puts this here so it's easier to understand than controller.isGrounded "It returns true if the controller collided with any object below it during the movement — typically used to determine if the character is standing on a surface (e.g., terrain, platform, floor)."
 
-        // if player is on the ground and still moving downwards...
-        if (groundedPlayer && playerVelocity.y < 0)
-        {
-            // stop moving downwards. Need to do this because of our gravity.
-            playerVelocity.y = 0f;
-        }
+        Vector3 camForward = playerCamera.forward;          // this is what direction the camera is facing forwards
+        camForward.y = 0f;                                  // y = 0f means vertical won't be affected.                         
+
+        Vector3 camRight = playerCamera.right;              // this adds our direction we're looking from left to right
+        camRight.y = 0f;
 
         // Read input 
         Vector2 input = moveAction.action.ReadValue<Vector2>();               // Look for what buttons we press
-        Vector3 move = new Vector3(input.x, 0, input.y);                      // Translate it to the third dimension, specifically our x and y. NOTE HOW input.y IS FOR OUR Z, THAT'S BECAUSE OUR X AND Y IN A VECTOR 2 DOESNT MEAN THE SAME IN 3D SINCE Y IS NOW UP AND DOWN
+        Vector3 move = camForward * input.y + camRight * input.x;             // Translate it to the third dimension, specifically our x and y. NOTE HOW input.y IS FOR OUR Z, THAT'S BECAUSE OUR X AND Y IN A VECTOR 2 DOESNT MEAN THE SAME IN 3D SINCE Y IS NOW UP AND DOWN
         move = Vector3.ClampMagnitude(move, 1f);                              // Makes it so diagonal isn't the combined speed of 1y and 1x floats
-
-        //if (move != Vector3.zero) // if we're moving
-        //{
-        //    transform.forward = move; // we move :O
-        //}
 
         Vector3 desiredVelocity = move * playerSpeed; // Vector3 desiredVelocity is our move (the x and y input for our movement) * playerSpeed (just a flat float variable.)
 
@@ -76,7 +61,7 @@ public class PlayerMovement : MonoBehaviour
             // Vector3.MoveTowards takes target, float and MaxDistanceDelta
             // The position to move from.
             // The position to move towards.
-            // Distance to move current per call.
+            // Distance to move currentHorizontalVelocity per call.
         }
         else
         {
@@ -84,7 +69,36 @@ public class PlayerMovement : MonoBehaviour
             currentHorizontalVelocity = Vector3.MoveTowards(currentHorizontalVelocity, Vector3.zero, deceleration * Time.deltaTime);
         }
 
-        // Jump
+        // Sprint Logic
+        if (runAction.action.IsPressed())
+        {
+            playerSpeed = 10f;
+            controller.height = 2.0f;     // hold crouch then sprint will make this player crouch height but run at run speed without this code.
+        }
+
+        // Crouch Logic
+        else if (crouchAction.action.IsPressed() && !runAction.action.IsPressed())        // this works like old valve games where crouching actaully brings your character model upwards instead of moving you downwards
+        {                                                                                 // so you can jump over higher obstacles by jumping. Not intentional and scuffed in implementation but cool.
+            controller.height = 1.0f;
+            playerSpeed = 2.5f;
+        }
+        else
+        {
+            controller.height = 2.0f;
+            playerSpeed = 5f;
+        }
+
+
+        // Jump Logic
+
+        // if player is on the ground and still moving downwards...
+        //if (groundedPlayer && playerVelocity.y < 0)
+        //{
+        //    // stop moving downwards. Need to do this because of our gravity.
+        //    playerVelocity.y = 0f;
+        //}
+
+        // Jump action
         if (jumpAction.action.triggered && groundedPlayer)
         {
             playerVelocity.y = Mathf.Sqrt(jumpHeight * -2.0f * gravityValue); // From CharacterController.Move on Unity Documentation, figure out Sqrt math
@@ -103,44 +117,17 @@ public class PlayerMovement : MonoBehaviour
         }
 
         // Apply gravity
-        playerVelocity.y += gravityValue * Time.deltaTime;  
-        // this one just pulls us down faster and faster infinitely since our negative gravity value is being multiplied by time
+        playerVelocity.y += gravityValue * Time.deltaTime;          // this one just pulls us down faster and faster infinitely since our negative gravity value is being multiplied by time
+
 
         // Combine horizontal and vertical movement
-        //Vector3 finalMove = (move * playerSpeed) + (playerVelocity.y * Vector3.up);       // The example code UnityDocumentation gave us move*speed which is 1x5. no acceleration or deceleration since it gives you a single value no matter what time
         Vector3 finalMove = currentHorizontalVelocity + (playerVelocity.y * Vector3.up);    // our currentHorizontalVelocity is multiplied by acceleration, deceleration and time so it has those things now
-        controller.Move(finalMove * Time.deltaTime);                                        // multiplying by Time.deltaTime multiple times doesn't make it faster if you stack them in the same calculation, things will run very slowly, that's the only thing you gotta worry about.
+        controller.Move(finalMove * Time.deltaTime);                                        // be careful when multiplying by Time.deltaTime multiple time, things will run either very quickly or very slowly.
     }
 }
-//Holding shift causes the player to sprint. 
-//Holding ctrl causes the player to crouch. 
-//The player cannot sprint while crouching. It is up to you to decide how to handle this. 
-//The character controller can walk up slopes.
 //The character controller must not be able to walk up steep slopes (> 50 degrees). 
 //The player controller must not be able to jump up vertical walls repeatedly. 
-//Create a Test Level for the character controller. You may wish to use ProBuilder for this, but it is not strictly necessary. 
 //The test level should provide vertical walls, various slopes, and ledges to test the functionality of the character controller. 
-
-
-//Movement functionality: 6 points
-
-//Look-rotation functionality: 4 points
-
-//Jump functionality: 4 points
-
-//Test level: 2 points
-
-//Used named variables (no magic numbers), and appropriate variables are adjustable in the inspector: 3
-
-//Crouch: 2 points
-
-//Sprint: 2 points
-
-//Character controller can walk up slopes 50 degrees or less: 2 points
-
-//Code was commented and version control was used: 2
-
-//Game Feel: 3 points
 
 //Submission: 
 

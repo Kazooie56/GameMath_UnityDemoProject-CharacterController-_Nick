@@ -43,7 +43,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Look?",
+                    "name": "Look",
                     "type": "Value",
                     "id": "469db758-87ef-4ec7-92d4-c1685be57109",
                     "expectedControlType": "Vector2",
@@ -159,7 +159,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Look?",
+                    "action": "Look",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
