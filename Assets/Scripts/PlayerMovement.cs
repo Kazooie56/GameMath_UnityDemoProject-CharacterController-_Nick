@@ -30,7 +30,7 @@ public class PlayerMovement : MonoBehaviour
 
     private void Awake()
     {
-        controller = GetComponent<CharacterController>(); // 
+        controller = GetComponent<CharacterController>(); // This grabs the CharacterController before anything else happens
     }
 
     private void OnEnable()
@@ -61,15 +61,15 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = new Vector3(input.x, 0, input.y);                      // Translate it to the third dimension, specifically our x and y. NOTE HOW input.y IS FOR OUR Z, THAT'S BECAUSE OUR X AND Y IN A VECTOR 2 DOESNT MEAN THE SAME IN 3D SINCE Y IS NOW UP AND DOWN
         move = Vector3.ClampMagnitude(move, 1f);                              // Makes it so diagonal isn't the combined speed of 1y and 1x floats
 
-        if (move != Vector3.zero)
+        if (move != Vector3.zero) // if we're moving
         {
-            transform.forward = move;
+            transform.forward = move; // we move :O
         }
 
         Vector3 desiredVelocity = move * playerSpeed; // Vector3 desiredVelocity is our move (the x and y input for our movement) * playerSpeed (just a flat float variable.)
 
         // Accelerate or decelerate
-        if (move.magnitude > 0.1f)
+        if (move.magnitude > 0.1f) // magnitude is the length of a vector so it's guaranteed to be > 0.1f if you're moving on keyboard.)
         {
             // Accelerate toward desired velocity
             currentHorizontalVelocity = Vector3.MoveTowards(currentHorizontalVelocity, desiredVelocity, acceleration * Time.deltaTime);
@@ -99,19 +99,19 @@ public class PlayerMovement : MonoBehaviour
             // we have our acceleration and our displacement already as variables so if we plug it all in, we can jump and land.
             // the thing UnityDocumentation wrote for it's parameters is actually s*2*a instead of 2as but it works the same.
             // so from this one line of code. playerVelocity.y = our equation where we need to reach our jumpHeigt variable, then using gravity and our -2f which we use because of the base formula square rooting for velocity uses, we rapidly decrease in speed using that logic
-
+            // it goes slightly higher than 1.5 though, i got as high as 1.56, idk how big a deal that is though or if I did something wrong.
         }
 
         // Apply gravity
-        playerVelocity.y += gravityValue * Time.deltaTime;
+        playerVelocity.y += gravityValue * Time.deltaTime;  
+        // this one just pulls us down faster and faster infinitely since our negative gravity value is being multiplied by time
 
         // Combine horizontal and vertical movement
-        //Vector3 finalMove = (move * playerSpeed) + (playerVelocity.y * Vector3.up); // The example code UnityDocumentation gave us move*speed which is 1x5
-        Vector3 finalMove = currentHorizontalVelocity + (playerVelocity.y * Vector3.up);
-        controller.Move(finalMove * Time.deltaTime);
+        //Vector3 finalMove = (move * playerSpeed) + (playerVelocity.y * Vector3.up);       // The example code UnityDocumentation gave us move*speed which is 1x5. no acceleration or deceleration since it gives you a single value no matter what time
+        Vector3 finalMove = currentHorizontalVelocity + (playerVelocity.y * Vector3.up);    // our currentHorizontalVelocity is multiplied by acceleration, deceleration and time so it has those things now
+        controller.Move(finalMove * Time.deltaTime);                                        // multiplying by Time.deltaTime multiple times doesn't make it faster if you stack them in the same calculation, things will run very slowly, that's the only thing you gotta worry about.
     }
 }
-//Movement is framerate independent.
 //Pressing space causes the player to jump. 
 //The player can only jump while on the ground.
 //Gravity is applied to the character controller - the player must fall back to the ground after jumping! 
