@@ -33,17 +33,17 @@ public class PlayerMovement : MonoBehaviour
         controller = GetComponent<CharacterController>(); // This grabs the CharacterController before anything else happens
     }
 
-    private void OnEnable()
-    {
-        moveAction.action.Enable();
-        jumpAction.action.Enable();
-    }
+    //private void OnEnable()
+    //{
+    //    moveAction.action.Enable();
+    //    jumpAction.action.Enable();
+    //}
 
-    private void OnDisable()
-    {
-        moveAction.action.Disable();
-        jumpAction.action.Disable();
-    }
+    //private void OnDisable()
+    //{
+    //    moveAction.action.Disable();
+    //    jumpAction.action.Disable();
+    //}
 
     void Update()
     {
@@ -61,10 +61,10 @@ public class PlayerMovement : MonoBehaviour
         Vector3 move = new Vector3(input.x, 0, input.y);                      // Translate it to the third dimension, specifically our x and y. NOTE HOW input.y IS FOR OUR Z, THAT'S BECAUSE OUR X AND Y IN A VECTOR 2 DOESNT MEAN THE SAME IN 3D SINCE Y IS NOW UP AND DOWN
         move = Vector3.ClampMagnitude(move, 1f);                              // Makes it so diagonal isn't the combined speed of 1y and 1x floats
 
-        if (move != Vector3.zero) // if we're moving
-        {
-            transform.forward = move; // we move :O
-        }
+        //if (move != Vector3.zero) // if we're moving
+        //{
+        //    transform.forward = move; // we move :O
+        //}
 
         Vector3 desiredVelocity = move * playerSpeed; // Vector3 desiredVelocity is our move (the x and y input for our movement) * playerSpeed (just a flat float variable.)
 
@@ -112,12 +112,6 @@ public class PlayerMovement : MonoBehaviour
         controller.Move(finalMove * Time.deltaTime);                                        // multiplying by Time.deltaTime multiple times doesn't make it faster if you stack them in the same calculation, things will run very slowly, that's the only thing you gotta worry about.
     }
 }
-//Pressing space causes the player to jump. 
-//The player can only jump while on the ground.
-//Gravity is applied to the character controller - the player must fall back to the ground after jumping! 
-//The player maintains control while in the air. 
-//The mouse controls pitch and yaw
-//Use angle constraints to limit the upper and lower bounds of the pitch.
 //Holding shift causes the player to sprint. 
 //Holding ctrl causes the player to crouch. 
 //The player cannot sprint while crouching. It is up to you to decide how to handle this. 
